@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Coffee Shop – Live Leaderboard</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;600&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{min-height:100vh;background:#0F0704;font-family:'DM Sans',sans-serif;color:#F5ECD7;}
+header{display:flex;align-items:center;justify-content:space-between;padding:1.2rem 2.5rem 1rem;border-bottom:1px solid rgba(201,125,46,0.2);}
+.logo{font-family:'Bebas Neue',sans-serif;font-size:1.8rem;color:#C97D2E;letter-spacing:0.06em;}
+.logo span{color:#F5ECD7;}
+.hright{display:flex;align-items:center;gap:1.5rem;}
+.stat{text-align:right;}
+.stat-val{font-family:'Bebas Neue',sans-serif;font-size:1.5rem;color:#C97D2E;}
+.stat-lbl{font-size:0.65rem;letter-spacing:0.1em;text-transform:uppercase;color:rgba(245,236,215,0.35);}
+.pulse{display:inline-block;width:7px;height:7px;border-radius:50%;background:#C97D2E;margin-right:0.4rem;animation:pulse 1.8s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.2}}
+.live-tag{font-size:0.7rem;color:rgba(245,236,215,0.4);letter-spacing:0.08em;text-transform:uppercase;}
+.podium{display:flex;justify-content:center;align-items:flex-end;gap:1.2rem;padding:1.5rem 2rem 0;min-height:160px;}
+.pod{text-align:center;display:flex;flex-direction:column;align-items:center;}
+.pod-name{font-size:0.85rem;font-weight:600;margin-bottom:0.4rem;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.pod-medal{font-size:1.9rem;margin-bottom:0.3rem;}
+.pod-profits{font-family:'Bebas Neue',sans-serif;font-size:1.35rem;color:#C97D2E;margin-bottom:0.4rem;}
+.pod-block{border-radius:8px 8px 0 0;width:120px;display:flex;align-items:center;justify-content:center;}
+.pb1{height:80px;background:rgba(201,125,46,0.25);border:1px solid rgba(201,125,46,0.45);}
+.pb2{height:55px;background:rgba(180,180,180,0.12);border:1px solid rgba(180,180,180,0.25);}
+.pb3{height:38px;background:rgba(150,100,50,0.12);border:1px solid rgba(150,100,50,0.25);}
+.pod-rank{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;color:rgba(245,236,215,0.25);}
+.pod.first .pod-name{color:#E8A838;}
+.table-wrap{padding:0.6rem 2.5rem 2rem;overflow-x:auto;}
+table{width:100%;border-collapse:collapse;}
+th{font-size:0.65rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:rgba(201,125,46,0.65);padding:0.5rem 0.8rem;border-bottom:1px solid rgba(201,125,46,0.15);text-align:left;}
+th.r{text-align:right;}
+td{padding:0.55rem 0.8rem;font-size:0.88rem;border-bottom:1px solid rgba(255,255,255,0.04);vertical-align:middle;}
+td.r{text-align:right;}
+tr:hover td{background:rgba(201,125,46,0.05);}
+tr.top3 td{background:rgba(201,125,46,0.06);}
+.rank-c{font-weight:600;color:rgba(245,236,215,0.35);}
+.name-c{font-weight:600;}
+.profits-c{font-family:'Bebas Neue',sans-serif;font-size:1.05rem;color:#C97D2E;text-align:right;}
+.aw{display:inline-block;font-size:0.65rem;padding:0.12rem 0.45rem;border-radius:8px;margin-left:0.35rem;vertical-align:middle;white-space:nowrap;}
+.aw-g{background:rgba(201,125,46,0.18);color:#E8A838;border:1px solid rgba(201,125,46,0.28);}
+.aw-s{background:rgba(180,180,180,0.12);color:#ccc;border:1px solid rgba(180,180,180,0.25);}
+.aw-b{background:rgba(150,100,50,0.15);color:#cd7f32;border:1px solid rgba(150,100,50,0.25);}
+.aw-d{background:rgba(45,106,45,0.18);color:#8fcc5e;border:1px solid rgba(45,106,45,0.28);}
+.aw-r{background:rgba(26,63,143,0.18);color:#7aadff;border:1px solid rgba(26,63,143,0.28);}
+.bar-bg{width:140px;background:rgba(255,255,255,0.06);border-radius:2px;height:5px;display:inline-block;}
+.bar-fg{height:5px;background:#C97D2E;border-radius:2px;transition:width 0.6s ease;}
+.muted{color:rgba(245,236,215,0.35);}
+.empty{text-align:center;padding:5rem 2rem;color:rgba(245,236,215,0.3);}
+.empty .ei{font-size:3rem;margin-bottom:1rem;display:block;}
+.controls{display:flex;align-items:center;gap:0.8rem;}
+.ctrl{background:rgba(201,125,46,0.1);color:#C97D2E;border:1px solid rgba(201,125,46,0.28);border-radius:6px;padding:0.32rem 0.8rem;font-size:0.76rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;}
+.ctrl:hover{background:rgba(201,125,46,0.2);}
+.ctrl.danger{color:#ff9a9a;border-color:rgba(176,48,48,0.3);background:rgba(176,48,48,0.08);}
+.ring-wrap{cursor:pointer;width:34px;height:34px;position:relative;}
+.ring-wrap svg{position:absolute;inset:0;transform:rotate(-90deg);}
+.ring-wrap .ri{font-size:0.68rem;position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:rgba(245,236,215,0.3);}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">☕ Café <span>Calypso</span> — Live Leaderboard</div>
+  <div class="hright">
+    <div class="stat"><div class="stat-val" id="statCount">—</div><div class="stat-lbl">submitted</div></div>
+    <div class="stat"><div class="stat-val" id="statTop">—</div><div class="stat-lbl">top profits</div></div>
+    <div class="controls">
+      <span class="live-tag"><span class="pulse"></span>live</span>
+      <div class="ring-wrap" onclick="manualRefresh()" title="Refresh now">
+        <svg width="34" height="34" viewBox="0 0 34 34">
+          <circle cx="17" cy="17" r="14" fill="none" stroke="rgba(201,125,46,0.15)" stroke-width="3"/>
+          <circle id="ring" cx="17" cy="17" r="14" fill="none" stroke="#C97D2E" stroke-width="3" stroke-dasharray="88" stroke-dashoffset="88" stroke-linecap="round" style="transition:stroke-dashoffset 1s linear;"/>
+        </svg>
+        <span class="ri" id="countdown">10</span>
+      </div>
+      <button class="ctrl danger" onclick="clearAll()">Clear all</button>
+    </div>
+  </div>
+</header>
+<div id="podium-wrap" class="podium"></div>
+<div class="table-wrap">
+  <table>
+    <thead><tr>
+      <th style="width:44px">#</th><th>Name</th>
+      <th class="r" style="width:120px">Profits</th>
+      <th class="r" style="width:72px">Days</th>
+      <th class="r" style="width:72px">Rep</th>
+      <th style="width:160px">Progress</th>
+    </tr></thead>
+    <tbody id="tbody"></tbody>
+  </table>
+  <div class="empty" id="empty" style="display:none">
+    <span class="ei">☕</span>
+    <p>Waiting for students to submit…</p>
+    <p style="font-size:0.78rem;margin-top:0.6rem;color:rgba(245,236,215,0.2)">Auto-refreshes every 10 seconds</p>
+  </div>
+</div>
+<script>
+const CSV='https://docs.google.com/spreadsheets/d/e/2PACX-1vRx6cM4X9b0gBprqFwJU1fxkAZAJdBJiP2UBmTWBWnwu-9FU4odnJUy2UmZr-WVXkLdyj1nMaOZkGdV/pub?gid=0&single=true&output=csv';
+const API='https://script.google.com/macros/s/AKfycbx8RrnwvM1xubuiT1FRjpayhRZ1McBP5Hmugkkni3FKjzx7_z5ZqWreoc3OkcesmVHMnA/exec';
+const INTERVAL=10;
+let cd=INTERVAL,data=[];
+
+function parseCSV(text){
+  const lines=text.trim().split('\n');
+  if(lines.length<2)return[];
+  const result=[];
+  for(let i=1;i<lines.length;i++){
+    const cols=[];let cur='',inQ=false;
+    for(let c of lines[i]){
+      if(c==='"'){inQ=!inQ;}
+      else if(c===','&&!inQ){cols.push(cur);cur='';}
+      else{cur+=c;}
+    }
+    cols.push(cur);
+    const name=(cols[0]||'').trim();
+    if(!name)continue;
+    result.push({name,profits:parseFloat(cols[1])||0,days:parseInt(cols[2])||0,reputation:parseInt(cols[3])||0});
+  }
+  return result.sort((a,b)=>b.profits-a.profits);
+}
+
+async function fetchData(){
+  try{
+    const r=await fetch(CSV+'&nocache='+Date.now());
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    const text=await r.text();
+    data=parseCSV(text);
+    render();
+  }catch(e){console.warn('Fetch failed:',e);}
+}
+
+function render(){
+  const tbody=document.getElementById('tbody');
+  const empty=document.getElementById('empty');
+  const podWrap=document.getElementById('podium-wrap');
+  document.getElementById('statCount').textContent=data.length;
+  document.getElementById('statTop').textContent=data.length?'$'+data[0].profits.toFixed(2):'—';
+  if(!data.length){tbody.innerHTML='';empty.style.display='block';podWrap.innerHTML='';return;}
+  empty.style.display='none';
+  const maxP=data[0].profits||1;
+  const maxDays=Math.max(...data.map(d=>d.days||0));
+  const maxRep=Math.max(...data.map(d=>d.reputation||0));
+  const maxDaysName=maxDays>0?data.find(d=>(d.days||0)===maxDays)?.name:null;
+  const maxRepName=maxRep>0?data.find(d=>(d.reputation||0)===maxRep)?.name:null;
+  const order=[1,0,2];
+  const medals=['🥇','🥈','🥉'];
+  const blocks=['pb2','pb1','pb3'];
+  podWrap.innerHTML=order.map(i=>{
+    if(!data[i])return'';
+    return'<div class="pod'+(i===0?' first':'')+'"><div class="pod-name">'+esc(data[i].name)+'</div><div class="pod-medal">'+medals[i]+'</div><div class="pod-profits">$'+data[i].profits.toFixed(2)+'</div><div class="pod-block '+blocks[order.indexOf(i)]+'"><span class="pod-rank">'+(i+1)+'</span></div></div>';
+  }).join('');
+  tbody.innerHTML=data.map((e,i)=>{
+    let aw='';
+    if(i===0)aw+='<span class="aw aw-g">🥇 1st</span>';
+    else if(i===1)aw+='<span class="aw aw-s">🥈 2nd</span>';
+    else if(i===2)aw+='<span class="aw aw-b">🥉 3rd</span>';
+    if(maxDaysName&&e.name===maxDaysName)aw+='<span class="aw aw-d">⏱ Most days</span>';
+    if(maxRepName&&e.name===maxRepName)aw+='<span class="aw aw-r">⭐ Best rep</span>';
+    const pct=Math.round((e.profits/maxP)*100);
+    return'<tr class="'+(i<3?'top3':'')+'"><td class="rank-c">'+(i+1)+'</td><td class="name-c">'+esc(e.name)+aw+'</td><td class="profits-c">$'+e.profits.toFixed(2)+'</td><td class="r muted">'+(e.days||'—')+'</td><td class="r muted">'+(e.reputation||'—')+'</td><td><div class="bar-bg"><div class="bar-fg" style="width:'+pct+'%"></div></div></td></tr>';
+  }).join('');
+}
+
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function manualRefresh(){cd=INTERVAL;fetchData();}
+
+async function clearAll(){
+  if(!confirm('Clear ALL scores? This cannot be undone.'))return;
+  try{
+    await fetch(API,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({_clear:true})});
+    data=[];render();
+    setTimeout(fetchData,3000);
+  }catch(e){alert('Could not clear.');}
+}
+
+function tick(){
+  cd--;
+  document.getElementById('countdown').textContent=cd;
+  const offset=88-(88*(INTERVAL-cd)/INTERVAL);
+  document.getElementById('ring').style.strokeDashoffset=offset;
+  if(cd<=0){cd=INTERVAL;fetchData();}
+}
+
+fetchData();
+setInterval(tick,1000);
+</script>
+</body>
+</html>
